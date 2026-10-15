@@ -1,0 +1,79 @@
+From 932e070de3991d697e6114903533a551da8081f6 Mon Sep 17 00:00:00 2001
+From: yangj <yangj@local>
+Date: Thu, 15 Oct 2026 17:26:37 +0800
+Subject: [PATCH] landscape fullscreen keyboard: integrated advanced keyboard
+ takes the whole screen in landscape
+
+---
+ .../btremote/ui/screens/RemoteScreen.kt        | 18 +++++++++++++++++-
+ 1 file changed, 17 insertions(+), 1 deletion(-)
+
+diff --git a/app/src/main/java/com/atharok/btremote/ui/screens/RemoteScreen.kt b/app/src/main/java/com/atharok/btremote/ui/screens/RemoteScreen.kt
+index 8b5189f..fbb6455 100644
+--- a/app/src/main/java/com/atharok/btremote/ui/screens/RemoteScreen.kt
++++ b/app/src/main/java/com/atharok/btremote/ui/screens/RemoteScreen.kt
+@@ -93,6 +93,7 @@ fun RemoteScreen(
+ 
+     // Keyboard
+     var isKeyboardVisible: Boolean by rememberSaveable { mutableStateOf(false) }
++    val isIntegratedKeyboardVisible = remoteSettings.useAdvancedKeyboard && remoteSettings.useAdvancedKeyboardIntegrated && isKeyboardVisible
+ 
+     // More Buttons
+     var isMoreButtonsVisible: Boolean by rememberSaveable { mutableStateOf(false) }
+@@ -111,6 +112,7 @@ fun RemoteScreen(
+     StatelessRemoteScreen(
+         deviceName = bluetoothDeviceHidConnectionState.deviceName,
+         isLandscapeMode = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE,
++        isIntegratedKeyboardVisible = isIntegratedKeyboardVisible,
+         topBarActions = {
+             TopBarActions(
+                 navigateToSettings = navigateToSettings,
+@@ -131,7 +133,7 @@ fun RemoteScreen(
+         remoteLayout = {
+             RemoteLayout(
+                 useMinimalistRemote = remoteSettings.useMinimalistRemote,
+-                isAdvancedKeyboardVisible = remoteSettings.useAdvancedKeyboard && remoteSettings.useAdvancedKeyboardIntegrated && isKeyboardVisible,
++                isAdvancedKeyboardVisible = isIntegratedKeyboardVisible,
+                 onMoreButtonsVisibleChanged = { isMoreButtonsVisible = !isMoreButtonsVisible },
+                 keyboardLanguage = remoteSettings.keyboardLanguage,
+                 sendRemoteKeyReport = remoteViewModel.sendRemoteReport,
+@@ -195,6 +197,7 @@ fun RemoteScreen(
+ private fun StatelessRemoteScreen(
+     deviceName: String,
+     isLandscapeMode: Boolean,
++    isIntegratedKeyboardVisible: Boolean,
+     topBarActions: @Composable (RowScope.() -> Unit),
+     remoteLayout: @Composable () -> Unit,
+     navigationLayout: @Composable () -> Unit,
+@@ -212,6 +215,7 @@ private fun StatelessRemoteScreen(
+             RemoteLandscapeView(
+                 remoteLayout = remoteLayout,
+                 navigationLayout = navigationLayout,
++                isIntegratedKeyboardVisible = isIntegratedKeyboardVisible,
+                 modifier = Modifier
+                     .fillMaxSize()
+                     .padding(innerPadding)
+@@ -235,8 +239,20 @@ private fun StatelessRemoteScreen(
+ private fun RemoteLandscapeView(
+     remoteLayout: @Composable () -> Unit,
+     navigationLayout: @Composable () -> Unit,
++    isIntegratedKeyboardVisible: Boolean,
+     modifier: Modifier = Modifier
+ ) {
++    if(isIntegratedKeyboardVisible) {
++        // Landscape fullscreen keyboard: the integrated advanced keyboard takes the whole screen
++        Box(
++            modifier = modifier,
++            contentAlignment = Alignment.Center
++        ) {
++            remoteLayout()
++        }
++        return
++    }
++
+     var rowSize by remember { mutableStateOf(Size.Zero) }
+ 
+     Row(
+-- 
+2.55.0.windows.3
+
